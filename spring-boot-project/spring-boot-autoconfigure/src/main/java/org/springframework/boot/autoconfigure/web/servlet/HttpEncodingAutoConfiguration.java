@@ -41,9 +41,13 @@ import org.springframework.web.filter.CharacterEncodingFilter;
  * @since 2.0.0
  */
 @Configuration(proxyBeanMethods = false)
+// 作用是使得 HttpProperties 的属性生效
 @EnableConfigurationProperties(HttpProperties.class)
+// 条件：当前应用是Servlet应用，并且CharacterEncodingFilter类存在
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+// 条件：存在解决 SpringMVC 乱码的过滤器
 @ConditionalOnClass(CharacterEncodingFilter.class)
+// 条件：当前应用是否启用了Http编码
 @ConditionalOnProperty(prefix = "spring.http.encoding", value = "enabled", matchIfMissing = true)
 public class HttpEncodingAutoConfiguration {
 
@@ -54,7 +58,7 @@ public class HttpEncodingAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean // 判断当前容器中是否已经存在这个bean了，有就不创建了
 	public CharacterEncodingFilter characterEncodingFilter() {
 		CharacterEncodingFilter filter = new OrderedCharacterEncodingFilter();
 		filter.setEncoding(this.properties.getCharset().name());

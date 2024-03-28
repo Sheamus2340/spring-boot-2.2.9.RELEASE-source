@@ -45,12 +45,14 @@ import org.springframework.data.repository.Repository;
  * @author Andy Wilkinson
  * @since 1.2.0
  */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-@SpringBootConfiguration
-@EnableAutoConfiguration
+@Target(ElementType.TYPE) // 配置类
+@Retention(RetentionPolicy.RUNTIME) // 运行时
+@Documented // 文档
+@Inherited // 继承
+
+@SpringBootConfiguration // 配置类
+@EnableAutoConfiguration // 自动配置
+// 扫描
 @ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
 		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
 public @interface SpringBootApplication {
