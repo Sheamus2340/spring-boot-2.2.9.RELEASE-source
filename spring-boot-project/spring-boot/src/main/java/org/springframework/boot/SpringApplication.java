@@ -191,6 +191,7 @@ public class SpringApplication {
 	 */
 	public static final String BANNER_LOCATION_PROPERTY = SpringApplicationBannerPrinter.BANNER_LOCATION_PROPERTY;
 
+	// System property that can be used to disable the headless mode
 	private static final String SYSTEM_PROPERTY_JAVA_AWT_HEADLESS = "java.awt.headless";
 
 	private static final Log logger = LogFactory.getLog(SpringApplication.class);
@@ -270,13 +271,13 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
-		// 推断应用类型
+		// 推断应用类型，servlet、reactive、none
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
-		// 初始化 classpath 下已经注册的 ApplicationContextInitializer
+		// 初始化 classpath 下已经注册的 ApplicationContextInitializer，并设置给当前的 SpringApplication
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
-		// 初始化 classpath 下所有已经注册的 ApplicationListener
+		// 初始化 classpath 下所有已经注册的 ApplicationListener， 并设置给当前的 SpringApplication
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
-		// 推断主类
+		// 推断主类也就是启动类
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 
@@ -306,6 +307,7 @@ public class SpringApplication {
 		stopWatch.start();
 		ConfigurableApplicationContext context = null;
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
+		// 配置 headless
 		configureHeadlessProperty();
 		// 创建监听器
 		SpringApplicationRunListeners listeners = getRunListeners(args);
@@ -323,7 +325,7 @@ public class SpringApplication {
 			context = createApplicationContext();
 			exceptionReporters = getSpringFactoriesInstances(SpringBootExceptionReporter.class,
 					new Class[]{ConfigurableApplicationContext.class}, context);
-			// 准备容器
+			// 找到主类并且将主类放入容器中，准备容器
 			prepareContext(context, environment, listeners, applicationArguments, printedBanner);
 			// 关键步骤
 			refreshContext(context);
@@ -438,6 +440,7 @@ public class SpringApplication {
 
 	/**
 	 * 这个方法的作用就是根据 type 去配置文件中获取到对应的 class
+	 * "META-INF/spring.factories" 下对应的配置进行反射实例化
 	 *
 	 * @param type
 	 * @param parameterTypes
@@ -505,7 +508,9 @@ public class SpringApplication {
 			ConversionService conversionService = ApplicationConversionService.getSharedInstance();
 			environment.setConversionService((ConfigurableConversionService) conversionService);
 		}
+		// 配置 property
 		configurePropertySources(environment, args);
+		// 配置 profile
 		configureProfiles(environment, args);
 	}
 
@@ -1290,7 +1295,7 @@ public class SpringApplication {
 	 * @return the running {@link ApplicationContext}
 	 */
 	public static ConfigurableApplicationContext run(Class<?>[] primarySources, String[] args) {
-		// 做了两件事情，初始化和执行run方法
+		// 做了两件事情，初始化【核心是创建配置的对象（ApplicationContextInitializer|ApplicationListener）】和执行run方法
 		return new SpringApplication(primarySources).run(args);
 	}
 
